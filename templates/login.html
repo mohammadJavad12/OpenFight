@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Terraxis - Login</title>
+    <style>
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+        }
+
+        body{
+            height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            overflow:hidden;
+            font-family:'Inter',sans-serif;
+
+            background:
+                radial-gradient(circle at 20% 20%, rgba(0,255,200,.15), transparent 30%),
+                radial-gradient(circle at 80% 80%, rgba(0,150,255,.15), transparent 30%),
+                linear-gradient(135deg,#050814,#0d1224,#111827);
+        }
+
+        /* Animated grid */
+
+        body::before{
+            content:"";
+            position:absolute;
+            inset:0;
+
+            background-image:
+                linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+
+            background-size:50px 50px;
+
+            animation:gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove{
+            from{
+                transform:translateY(0);
+            }
+            to{
+                transform:translateY(50px);
+            }
+        }
+
+        /* Card */
+
+        .login-box{
+            position:relative;
+            z-index:2;
+
+            width:420px;
+
+            padding:40px;
+
+            border-radius:24px;
+
+            backdrop-filter:blur(25px);
+
+            background:rgba(15,23,42,.75);
+
+            border:1px solid rgba(255,255,255,.08);
+
+            box-shadow:
+                0 0 50px rgba(0,255,200,.15),
+                0 20px 80px rgba(0,0,0,.5);
+
+            color:white;
+        }
+
+        .logo{
+            font-size:70px;
+            margin-bottom:10px;
+        }
+
+        .login-box h1{
+            text-align:center;
+            font-size:38px;
+            letter-spacing:3px;
+            margin-bottom:6px;
+
+            background:linear-gradient(
+                90deg,
+                #00ffd0,
+                #00a8ff
+            );
+
+            -webkit-background-clip:text;
+            -webkit-text-fill-color:transparent;
+        }
+
+        .subtitle{
+            text-align:center;
+            color:#94a3b8;
+            margin-bottom:30px;
+            font-size:14px;
+            letter-spacing:1px;
+        }
+
+        .input-group{
+            margin-bottom:16px;
+        }
+
+        .login-box input{
+            width:100%;
+            padding:16px 18px;
+
+            border:none;
+            outline:none;
+
+            border-radius:14px;
+
+            background:rgba(255,255,255,.05);
+
+            color:white;
+
+            font-size:15px;
+
+            transition:.25s;
+        }
+
+        .login-box input:focus{
+            background:rgba(255,255,255,.08);
+
+            box-shadow:
+                0 0 0 1px #00ffd0,
+                0 0 20px rgba(0,255,208,.3);
+        }
+
+        .login-box input::placeholder{
+            color:#64748b;
+        }
+
+        .join-btn{
+            width:100%;
+
+            margin-top:10px;
+            padding:16px;
+
+            border:none;
+            border-radius:14px;
+
+            font-size:16px;
+            font-weight:700;
+
+            cursor:pointer;
+
+            color:#04121d;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    #00ffd0,
+                    #00a8ff
+                );
+
+            transition:.25s;
+        }
+
+        .join-btn:hover{
+            transform:translateY(-2px);
+
+            box-shadow:
+                0 10px 30px rgba(0,255,208,.35);
+        }
+
+        .join-btn:active{
+            transform:translateY(0);
+        }
+
+        .server-status{
+            margin-top:20px;
+
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:8px;
+
+            color:#94a3b8;
+            font-size:13px;
+        }
+
+        .server-status::before{
+            content:"";
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:#22c55e;
+
+            box-shadow:
+                0 0 10px #22c55e;
+        }
+
+        .error-msg{
+            margin-top:12px;
+            color:#ff6b6b;
+            text-align:center;
+            display:none;
+        }
+
+        .version{
+            margin-top:18px;
+            text-align:center;
+            color:#64748b;
+            font-size:12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+
+        <div class="logo">🛰️</div>
+
+        <h1>Terraxis</h1>
+
+        <div class="subtitle">
+            STRATEGY SIMULATION
+        </div>
+
+        <div class="input-group">
+            <input id="secret"
+                type="password"
+                placeholder="Command Access Code">
+        </div>
+
+        <div class="input-group">
+            <input id="name"
+                type="text"
+                placeholder="Commander Name">
+        </div>
+
+        <button class="join-btn" onclick="joinGame()">
+            ENTER THE BATTLE
+        </button>
+
+        <div id="error" class="error-msg"></div>
+
+        <div class="server-status">
+            Strategic Network Online
+        </div>
+
+        <div class="version">
+            Season 1 • Global Conflict
+        </div>
+
+    </div>
+
+    <script>
+        async function joinGame() {
+            const secret = document.getElementById('secret').value.trim();
+            const name = document.getElementById('name').value.trim() || 'Soldier';
+            const errorEl = document.getElementById('error');
+            
+            errorEl.style.display = 'none';
+            
+            if (!secret) {
+                errorEl.textContent = 'Please enter the game secret';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            try {
+                const resp = await fetch('/join', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ secret, name })
+                });
+                
+                const data = await resp.json();
+                
+                if (!data.success) {
+                    errorEl.textContent = data.error || 'Join failed';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+                
+                // Store token and redirect to game
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('playerName', name);
+                window.location.href = '/game';
+                
+            } catch (e) {
+                errorEl.textContent = 'Cannot connect to server';
+                errorEl.style.display = 'block';
+            }
+        }
+        
+        // Enter key to submit
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') joinGame();
+        });
+    </script>
+</body>
+</html>
