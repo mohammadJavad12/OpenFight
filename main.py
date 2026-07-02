@@ -2082,4 +2082,24 @@ class GameServer:
 
 
 if __name__ == "__main__":
-    GameServer().run()
+    import os
+    import sys
+    
+    # Check if running on Render
+    if os.environ.get("RENDER"):
+        # On Render, we need to use the PORT environment variable
+        port = int(os.environ.get("PORT", 10000))
+        # Don't ask for port input
+        replay = ReplayManager(f"replay_{port}.csv")
+        server = GameServer()
+        server.generate_world()
+        threading.Thread(target=server.simulation_loop, daemon=True).start()
+        uvicorn.run(server.app, host="0.0.0.0", port=port)
+    else:
+        # Local development - ask for port
+        port = int(input("port: "))
+        replay = ReplayManager(f"replay{port}.csv")
+        server = GameServer()
+        server.generate_world()
+        threading.Thread(target=server.simulation_loop, daemon=True).start()
+        uvicorn.run(server.app, host="0.0.0.0", port=port)
